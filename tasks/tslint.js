@@ -29,7 +29,7 @@ class CodeClimateObject {
 /* eslint-disable no-invalid-this, no-use-before-define */
 module.exports = function (grunt) {
     var Linter = require("tslint");
-    var md5 = require("blueimp-md5");
+    var md5 = require("js-md5");
 
     grunt.registerMultiTask("tslint", "A linter for TypeScript.", function () {
         var options = this.options({
@@ -43,6 +43,7 @@ module.exports = function (grunt) {
             force: false,
             fix: false,
             codeClimate: false,
+            codeClimateFile: null
         });
 
         var specifiedConfiguration = options.configuration;
@@ -50,6 +51,7 @@ module.exports = function (grunt) {
         var errors = 0;
         var warnings = 0;
         var results = [];
+        var codeClimateResults = [];
 
         var force = options.force;
         var outputFile = options.outputFile;
@@ -104,7 +106,7 @@ module.exports = function (grunt) {
 
                     if (options.codeClimate) {
                         if (options.formatter.toLowerCase() === "json") {
-                            json_to_code_climate(result);
+                            codeClimateResults = codeClimateResults.concat(json_to_code_climate(result));
                         } else {
                             return callback(new Error('Code climate can only be used with tslint create a json report'));
                         }
@@ -131,14 +133,13 @@ module.exports = function (grunt) {
                     if (result.errorCount > 0) {
                         success = false;
                     }
+
+                    if (codeClimateResults.length > 0 && options.codeClimateFile != null) {
+                        grunt.file.write(options.codeClimateFile, JSON.stringify(codeClimateResults));
+                    }
                 }
             }
 
-            //create local node module for this
-            //code climate option.
-            //results
-            // for each of them create a new json object with the correct tags included hash
-            // output to a file.
 
             // Using setTimeout as process.nextTick() doesn't flush
             setTimeout(function () {
@@ -193,12 +194,12 @@ module.exports = function (grunt) {
                 var codeClimate = new CodeClimateObject();
 
                 var error = fileErrorsResult.failures[i];
-                console.log(error);
                 codeClimate.description = error.failure;
-                codeClimate.fingerprint = md5(error);
                 codeClimate.location.lines.begin = error.startPosition.position;
                 codeClimate.location.path = error.fileName;
+                codeClimate.fingerprint = md5(codeClimate.description.concat(codeClimate.location.lines.begin).concat(codeClimate.location.path));
                 codeClimates[i] = codeClimate;
+
 
             }
 

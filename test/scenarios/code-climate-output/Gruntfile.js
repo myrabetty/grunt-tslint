@@ -23,7 +23,8 @@ module.exports = function(grunt) {
                     configuration: grunt.file.readJSON("tslint.json"),
                     outputFile: "tmp/outputFile",
                     formatter: "json",
-                    codeClimate: true
+                    codeClimate: true,
+                    codeClimateFile: "tmp/code-quality-report.json"
                 },
                 files: {
                     src: ["*.ts"],
