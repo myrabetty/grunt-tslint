@@ -1,5 +1,4 @@
 /*
- * Copyright 2013 Palantir Technologies, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +15,21 @@
 
 "use strict";
 
+class CodeClimateObject {
+    constructor() {
+        this.description = null;
+        this.fingerprint = null;
+        this.location = {
+            path: null,
+            lines: {begin: null}
+        };
+    }
+}
+
 /* eslint-disable no-invalid-this, no-use-before-define */
 module.exports = function (grunt) {
     var Linter = require("tslint");
+    var md5 = require("blueimp-md5");
 
     grunt.registerMultiTask("tslint", "A linter for TypeScript.", function () {
         var options = this.options({
@@ -26,10 +37,12 @@ module.exports = function (grunt) {
             project: null,
             formatter: "prose",
             outputFile: null,
+
             outputReport: null,
             appendToOutput: false,
             force: false,
             fix: false,
+            codeClimate: false,
         });
 
         var specifiedConfiguration = options.configuration;
@@ -71,6 +84,8 @@ module.exports = function (grunt) {
                 var linter = new Linter.Linter(lintOptions, program);
                 var contents = grunt.file.read(filepath);
                 linter.lint(filepath, contents, configuration);
+
+                //this is the result for a single file.
                 var result = linter.getResult();
 
                 if (result.errorCount > 0 || result.warningCount > 0) {
@@ -86,6 +101,15 @@ module.exports = function (grunt) {
                             grunt.file.delete(outputFile);
                         }
                     }
+
+                    if (options.codeClimate) {
+                        if (options.formatter.toLowerCase() === "json") {
+                            json_to_code_climate(result);
+                        } else {
+                            return callback(new Error('Code climate can only be used with tslint create a json report'));
+                        }
+                    }
+
                     result.output.split("\n").forEach(function (line) {
                         if (line !== "") {
                             results = results.concat(
@@ -109,6 +133,12 @@ module.exports = function (grunt) {
                     }
                 }
             }
+
+            //create local node module for this
+            //code climate option.
+            //results
+            // for each of them create a new json object with the correct tags included hash
+            // output to a file.
 
             // Using setTimeout as process.nextTick() doesn't flush
             setTimeout(function () {
@@ -150,5 +180,30 @@ module.exports = function (grunt) {
                 });
             }
         }
+
+        /**
+         * transforms the JSON array of errors summary of a single file in a JSON code climate object.
+         * @param tsLintJson
+         */
+        function json_to_code_climate(fileErrorsResult) {
+
+            var codeClimates = new Array(fileErrorsResult.failures.length);
+            for (var i = 0; i < fileErrorsResult.failures.length; i++) {
+
+                var codeClimate = new CodeClimateObject();
+
+                var error = fileErrorsResult.failures[i];
+                console.log(error);
+                codeClimate.description = error.failure;
+                codeClimate.fingerprint = md5(error);
+                codeClimate.location.lines.begin = error.startPosition.position;
+                codeClimate.location.path = error.fileName;
+                codeClimates[i] = codeClimate;
+
+            }
+
+            return codeClimates;
+        }
+
     });
 };
