@@ -10,7 +10,7 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
 
-        tslint: {
+        tslintCodeClimate: {
             default: {
                 options: {
                     // load using file name
@@ -24,6 +24,6 @@ module.exports = function(grunt) {
 
     });
 
-    grunt.registerTask("default", ["tslint"]);
+    grunt.registerTask("default", ["tslintCodeClimate"]);
 
 };

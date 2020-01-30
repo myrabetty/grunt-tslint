@@ -9,7 +9,7 @@ module.exports = function(grunt) {
 
     grunt.initConfig({
 
-        tslint: {
+        tslintCodeClimate: {
             stdout: {
                 options: {
                     configuration: grunt.file.readJSON("tslint.json"),
@@ -31,6 +31,6 @@ module.exports = function(grunt) {
 
     });
 
-    grunt.registerTask("default", ["tslint"]);
+    grunt.registerTask("default", ["tslintCodeClimate"]);
 
 };

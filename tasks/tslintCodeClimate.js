@@ -15,23 +15,12 @@
 
 "use strict";
 
-class CodeClimateObject {
-    constructor() {
-        this.description = null;
-        this.fingerprint = null;
-        this.location = {
-            path: null,
-            lines: {begin: null}
-        };
-    }
-}
-
 /* eslint-disable no-invalid-this, no-use-before-define */
 module.exports = function (grunt) {
     var Linter = require("tslint");
     var md5 = require("js-md5");
 
-    grunt.registerMultiTask("tslint", "A linter for TypeScript.", function () {
+    grunt.registerMultiTask("tslintCodeClimate", "A linter for TypeScript.", function () {
         var options = this.options({
             configuration: null,
             project: null,
@@ -104,13 +93,13 @@ module.exports = function (grunt) {
                         }
                     }
 
-                    if (options.codeClimate) {
+                    /*if (options.codeClimate) {
                         if (options.formatter.toLowerCase() === "json") {
                             codeClimateResults = codeClimateResults.concat(json_to_code_climate(result));
                         } else {
                             return callback(new Error('Code climate can only be used with tslint create a json report'));
                         }
-                    }
+                    }*/
 
                     result.output.split("\n").forEach(function (line) {
                         if (line !== "") {
@@ -134,12 +123,11 @@ module.exports = function (grunt) {
                         success = false;
                     }
 
-                    if (codeClimateResults.length > 0 && options.codeClimateFile != null) {
+                    /*if (codeClimateResults.length > 0 && options.codeClimateFile != null) {
                         grunt.file.write(options.codeClimateFile, JSON.stringify(codeClimateResults));
-                    }
+                    }*/
                 }
             }
-
 
             // Using setTimeout as process.nextTick() doesn't flush
             setTimeout(function () {

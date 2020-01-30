@@ -1,19 +1,21 @@
 # grunt-tslint [![NPM version](https://badge.fury.io/js/grunt-tslint.svg)](https://www.npmjs.com/package/grunt-tslint) [![Downloads](http://img.shields.io/npm/dm/grunt-tslint.svg)](https://npmjs.org/package/grunt-tslint)
 
-> A grunt plugin for [tslint](https://github.com/palantir/tslint).
+> A grunt plugin for [tslint](https://github.com/palantir/tslint) which returns code-climate output to allow integration 
+>with [GitLab code quality](https://docs.gitlab.com/ee/user/project/merge_requests/code_quality.html#code-quality-starter)
+> This plugin is an extension of the [grunt-tslint plugin](https://github.com/palantir/grunt-tslint) 
 
 ## Getting Started
 
 This plugin requires [Grunt](http://gruntjs.com/) `~0.4.1` and [tslint](https://github.com/palantir/tslint) `~4.0.0`
 
 ```
-npm install grunt-tslint --save-dev
+npm install grunt-tslint-code-climate --save-dev
 ```
 
 Once the plugin has been installed, it may be enabled inside your Gruntfile with this line of JavaScript:
 
 ```
-grunt.loadNpmTasks("grunt-tslint");
+grunt.loadNpmTasks("grunt-tslint-code-climate");
 ```
 
 ## The "tslint" task

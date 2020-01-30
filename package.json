@@ -1,22 +1,22 @@
 {
-  "name": "grunt-tslint",
+  "name": "grunt-tslint-code-climate",
   "description": "Grunt plugin for TypeScript Linter.",
-  "version": "5.0.2",
-  "homepage": "https://github.com/palantir/grunt-tslint",
+  "version": "0.0.1",
+  "homepage": "https://github.com/myrabetty/grunt-tslint-code-climate",
   "author": {
-    "name": "Palantir Technologies, Inc."
+    "name": "Myrabetty"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/palantir/grunt-tslint.git"
+    "url": "git://github.com/myrabetty/grunt-tslint-code-climate.git"
   },
   "bugs": {
-    "url": "https://github.com/palantir/grunt-tslint/issues"
+    "url": "https://github.com/myrabetty/grunt-tslint-code-climate/issues"
   },
   "licenses": [
     {
       "type": "Apache-2.0",
-      "url": "https://github.com/palantir/grunt-tslint/blob/master/LICENSE.txt"
+      "url": "https://github.com/myrabetty/grunt-tslint-code-climate/master/LICENSE.txt"
     }
   ],
   "main": "Gruntfile.js",
@@ -38,6 +38,7 @@
     "grunt-mocha-test": "^0.13.2",
     "mkdirp": "^0.5.1",
     "mocha": "^3.1.2",
+    "nyc": "^15.0.0",
     "rimraf": "^2.5.4",
     "tslint": "latest",
     "typescript": "latest"

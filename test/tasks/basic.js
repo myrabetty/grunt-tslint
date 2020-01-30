@@ -21,7 +21,7 @@ var fixture = function (file, scenario) {
     return path.join(dir, file);
 };
 
-describe('grunt-tslint on a single file', function () {
+describe('grunt-tslint-code-climate on a single file', function () {
     it('should find errors in single invalid .ts file', function (done) {
         execGrunt('--gruntfile ' + fixture('Gruntfile.js', 'single-error-file'), function (error, stdout, stderr) {
             expect(stdout).to.match(/1 error and 0 warnings in 1 file/);
@@ -62,10 +62,10 @@ describe('grunt-tslint on multiple files', function () {
 
         execGrunt([
             '--gruntfile ', fixture('Gruntfile.js', scenario),
-            'tslint:stdout'
+            'tslintCodeClimate:stdout'
         ].join(' '), function (error, stdout, stderr) {
 
-            expect(stdout).to.contain('Task "tslint:stdout" failed');
+            expect(stdout).to.contain('Task "tslintCodeClimate:stdout" failed');
 
             tmpOutput = stdout.split('\n')
                 .filter(function (line) {
@@ -89,7 +89,7 @@ describe('grunt-tslint on multiple files', function () {
 
         execGrunt([
             '--gruntfile ', fixture('Gruntfile.js', scenario),
-            'tslint:file'
+            'tslintCodeClimate:file'
         ].join(' '), function (error, stdout, stderr) {
             var outputFileContents = fs.readFileSync(path.join(tmpDir, 'outputFile')).toString().trim();
             expect(outputFileContents).to.be.equal(tmpOutput);
@@ -109,11 +109,20 @@ describe('grunt-tslint on multiple file with with code climate enabled.', functi
     it('should write output of multiple invalid .ts files into a single outputFile in json format', function (done) {
         execGrunt([
             '--gruntfile ', fixture('Gruntfile.js', scenario),
-            'tslint:file'
+            'tslintCodeClimate:file'
         ].join(' '), function (error, stdout, stderr) {
-            var outputFileContents = fs.readFileSync(path.join(tmpDir, 'outputFile')).toString().trim();
+            var outputFileContents = fs.readFileSync(path.join(tmpDir, 'outputFile')).toString().trim(),
+                expectedContent = "[{\"endPosition\":{\"character\":15,\"line\":0,\"position\":15},\"failure\":\"' should be \\\"\",\"fix\":{\"innerStart\":9,\"innerLength\":6,\"innerText\":\"\\\"abcd\\\"\"},\"name\":\"errorFile1.ts\",\"ruleName\":\"quotemark\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":9,\"line\":0,\"position\":9}}]\n[{\"endPosition\":{\"character\":21,\"line\":3,\"position\":90},\"failure\":\"Use of debugger statements is forbidden\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-debugger\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":12,\"line\":3,\"position\":81}},{\"endPosition\":{\"character\":16,\"line\":4,\"position\":107},\"failure\":\"forbidden eval\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-eval\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":12,\"line\":4,\"position\":103}}]";
+
             expect(outputFileContents).to.be.equal(expectedContent);
             done();
         });
+    });
+
+    it('should write a code-cliamte style report,', function(done) {
+        var outputFileContents = fs.readFileSync(path.join(tmpDir, 'code-quality-report.json')).toString().trim();
+        expectedContent = '[{\"description\":\"\' should be \\"\",\"fingerprint\":\"340d12a129d3fb79c370bbc4a8130256\",\"location\":{\"path\":\"errorFile1.ts\",\"lines\":{\"begin\":9}}},{\"description\":\"Use of debugger statements is forbidden\",\"fingerprint\":\"11b290d6e4989aad96493bf288502227\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":81}}},{\"description\":\"forbidden eval\",\"fingerprint\":\"54768ffce890becb45b804cc22ec1d2d\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":103}}}]';
+        expect(outputFileContents).to.be.equal(expectedContent);
+        done();
     });
 });
