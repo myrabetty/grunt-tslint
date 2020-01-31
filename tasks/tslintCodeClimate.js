@@ -15,6 +15,17 @@
 
 "use strict";
 
+class CodeClimateObject {
+    constructor() {
+        this.description = null;
+        this.fingerprint = null;
+        this.location = {
+            path: null,
+            lines: {begin: null}
+        };
+    }
+}
+
 /* eslint-disable no-invalid-this, no-use-before-define */
 module.exports = function (grunt) {
     var Linter = require("tslint");
@@ -44,6 +55,7 @@ module.exports = function (grunt) {
 
         var force = options.force;
         var outputFile = options.outputFile;
+        var codeClimateFile = options.codeClimateFile;
         var appendToOutput = options.appendToOutput;
 
         var program;
@@ -79,6 +91,7 @@ module.exports = function (grunt) {
                 //this is the result for a single file.
                 var result = linter.getResult();
 
+
                 if (result.errorCount > 0 || result.warningCount > 0) {
                     var outputString = "";
 
@@ -93,13 +106,19 @@ module.exports = function (grunt) {
                         }
                     }
 
-                    /*if (options.codeClimate) {
+                    if (options.codeClimate && options.codeClimateFile != null) {
                         if (options.formatter.toLowerCase() === "json") {
                             codeClimateResults = codeClimateResults.concat(json_to_code_climate(result));
                         } else {
-                            return callback(new Error('Code climate can only be used with tslint create a json report'));
+                            // if the option is not json then we run the analysis again to get the json format.
+                            var localLintOptions = lintOptions;
+                            localLintOptions.formatter = "json";
+                            var jsonLinter = new Linter.Linter(localLintOptions, program);
+                            jsonLinter.lint(filepath, contents, configuration);
+                            var jsonResult = jsonLinter.getResult();
+                            codeClimateResults = codeClimateResults.concat(json_to_code_climate(jsonResult));
                         }
-                    }*/
+                    }
 
                     result.output.split("\n").forEach(function (line) {
                         if (line !== "") {
@@ -123,9 +142,9 @@ module.exports = function (grunt) {
                         success = false;
                     }
 
-                    /*if (codeClimateResults.length > 0 && options.codeClimateFile != null) {
+                    if (codeClimateResults.length > 0 && options.codeClimateFile != null) {
                         grunt.file.write(options.codeClimateFile, JSON.stringify(codeClimateResults));
-                    }*/
+                    }
                 }
             }
 
@@ -187,8 +206,6 @@ module.exports = function (grunt) {
                 codeClimate.location.path = error.fileName;
                 codeClimate.fingerprint = md5(codeClimate.description.concat(codeClimate.location.lines.begin).concat(codeClimate.location.path));
                 codeClimates[i] = codeClimate;
-
-
             }
 
             return codeClimates;

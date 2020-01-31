@@ -99,30 +99,68 @@ describe('grunt-tslint on multiple files', function () {
     });
 });
 
-
-describe('grunt-tslint on multiple file with with code climate enabled.', function () {
+describe('grunt-tslint-code-climate on multiple file with code climate enabled and output json.', function () {
 
     var scenario = 'code-climate-output',
-        tmpDir = fixture('tmp', scenario),
-        expectedContent = "[{\"endPosition\":{\"character\":15,\"line\":0,\"position\":15},\"failure\":\"' should be \\\"\",\"fix\":{\"innerStart\":9,\"innerLength\":6,\"innerText\":\"\\\"abcd\\\"\"},\"name\":\"errorFile1.ts\",\"ruleName\":\"quotemark\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":9,\"line\":0,\"position\":9}}]\n[{\"endPosition\":{\"character\":21,\"line\":3,\"position\":90},\"failure\":\"Use of debugger statements is forbidden\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-debugger\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":12,\"line\":3,\"position\":81}},{\"endPosition\":{\"character\":16,\"line\":4,\"position\":107},\"failure\":\"forbidden eval\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-eval\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":12,\"line\":4,\"position\":103}}]";
+        tmpDir = fixture('tmp', scenario);
 
-    it('should write output of multiple invalid .ts files into a single outputFile in json format', function (done) {
+    beforeEach(function (next) {
+        mkdirp(tmpDir, next);
+    });
+
+    afterEach(function (next) {
+        rimraf(tmpDir, next);
+    });
+
+    it('should write output of multiple invalid .ts files into a single output in json format and a code-climate file', function (done) {
+        execGrunt([
+            '--gruntfile ', fixture('Gruntfile.js', scenario),
+            'tslintCodeClimate:JSONfile'
+        ].join(' '), function (error, stdout, stderr) {
+            var outputFileContents = fs.readFileSync(path.join(tmpDir, 'outputJSONFile')).toString().trim(),
+                expectedContent = "[{\"endPosition\":{\"character\":15,\"line\":0,\"position\":15},\"failure\":\"' should be \\\"\",\"fix\":{\"innerStart\":9,\"innerLength\":6,\"innerText\":\"\\\"abcd\\\"\"},\"name\":\"errorFile1.ts\",\"ruleName\":\"quotemark\",\"ruleSeverity\":\"ERROR\",\"startPosition\":{\"character\":9,\"line\":0,\"position\":9}}]\n[{\"endPosition\":{\"character\":21,\"line\":3,\"position\":90},\"failure\":\"Use of debugger statements is forbidden\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-debugger\",\"ruleSeverity\":\"ERROR\",\"startPosition\":{\"character\":12,\"line\":3,\"position\":81}},{\"endPosition\":{\"character\":16,\"line\":4,\"position\":107},\"failure\":\"forbidden eval\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-eval\",\"ruleSeverity\":\"ERROR\",\"startPosition\":{\"character\":12,\"line\":4,\"position\":103}}]";
+
+            expect(outputFileContents).to.be.equal(expectedContent);
+
+            var codeClimateContents = fs.readFileSync(path.join(tmpDir, 'code-quality-report-JSON.json')).toString().trim(),
+                codeClimateExpectedContent = '[{\"description\":\"\' should be \\"\",\"fingerprint\":\"340d12a129d3fb79c370bbc4a8130256\",\"location\":{\"path\":\"errorFile1.ts\",\"lines\":{\"begin\":9}}},{\"description\":\"Use of debugger statements is forbidden\",\"fingerprint\":\"11b290d6e4989aad96493bf288502227\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":81}}},{\"description\":\"forbidden eval\",\"fingerprint\":\"54768ffce890becb45b804cc22ec1d2d\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":103}}}]';
+
+            expect(codeClimateContents).to.be.equal(codeClimateExpectedContent);
+            done();
+        });
+
+    });
+});
+
+
+describe('grunt-tslint-code-climate on multiple file with code climate enabled and output format prose.', function () {
+
+    var scenario = 'code-climate-output',
+        tmpDir = fixture('tmp', scenario);
+
+    beforeEach(function (next) {
+        mkdirp(tmpDir, next);
+    });
+
+    afterEach(function (next) {
+        rimraf(tmpDir, next);
+    });
+
+    it('should write output of multiple invalid .ts files into a single output in prose format and a code-climate file.', function (done) {
         execGrunt([
             '--gruntfile ', fixture('Gruntfile.js', scenario),
             'tslintCodeClimate:file'
         ].join(' '), function (error, stdout, stderr) {
             var outputFileContents = fs.readFileSync(path.join(tmpDir, 'outputFile')).toString().trim(),
-                expectedContent = "[{\"endPosition\":{\"character\":15,\"line\":0,\"position\":15},\"failure\":\"' should be \\\"\",\"fix\":{\"innerStart\":9,\"innerLength\":6,\"innerText\":\"\\\"abcd\\\"\"},\"name\":\"errorFile1.ts\",\"ruleName\":\"quotemark\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":9,\"line\":0,\"position\":9}}]\n[{\"endPosition\":{\"character\":21,\"line\":3,\"position\":90},\"failure\":\"Use of debugger statements is forbidden\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-debugger\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":12,\"line\":3,\"position\":81}},{\"endPosition\":{\"character\":16,\"line\":4,\"position\":107},\"failure\":\"forbidden eval\",\"name\":\"errorFile2.ts\",\"ruleName\":\"no-eval\",\"ruleSeverity\":\"error\",\"startPosition\":{\"character\":12,\"line\":4,\"position\":103}}]";
-
+                expectedContent = "ERROR: errorFile1.ts[1, 10]: ' should be \"\n" +
+                    "ERROR: errorFile2.ts[4, 13]: Use of debugger statements is forbidden\n" +
+                    "ERROR: errorFile2.ts[5, 13]: forbidden eval";
             expect(outputFileContents).to.be.equal(expectedContent);
+
+            var codeClimateContents = fs.readFileSync(path.join(tmpDir, 'code-quality-report.json')).toString().trim(),
+                codeClimateExpectedContent = '[{\"description\":\"\' should be \\"\",\"fingerprint\":\"340d12a129d3fb79c370bbc4a8130256\",\"location\":{\"path\":\"errorFile1.ts\",\"lines\":{\"begin\":9}}},{\"description\":\"Use of debugger statements is forbidden\",\"fingerprint\":\"11b290d6e4989aad96493bf288502227\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":81}}},{\"description\":\"forbidden eval\",\"fingerprint\":\"54768ffce890becb45b804cc22ec1d2d\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":103}}}]';
+            expect(codeClimateContents).to.be.equal(codeClimateExpectedContent);
             done();
         });
-    });
-
-    it('should write a code-cliamte style report,', function(done) {
-        var outputFileContents = fs.readFileSync(path.join(tmpDir, 'code-quality-report.json')).toString().trim();
-        expectedContent = '[{\"description\":\"\' should be \\"\",\"fingerprint\":\"340d12a129d3fb79c370bbc4a8130256\",\"location\":{\"path\":\"errorFile1.ts\",\"lines\":{\"begin\":9}}},{\"description\":\"Use of debugger statements is forbidden\",\"fingerprint\":\"11b290d6e4989aad96493bf288502227\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":81}}},{\"description\":\"forbidden eval\",\"fingerprint\":\"54768ffce890becb45b804cc22ec1d2d\",\"location\":{\"path\":\"errorFile2.ts\",\"lines\":{\"begin\":103}}}]';
-        expect(outputFileContents).to.be.equal(expectedContent);
-        done();
     });
 });

@@ -36,23 +36,22 @@
     "grunt-contrib-jshint": "^1.0.0",
     "grunt-eslint": "^18.1.0",
     "grunt-mocha-test": "^0.13.2",
+    "js-md5": "^0.7.3",
     "mkdirp": "^0.5.1",
     "mocha": "^3.1.2",
     "nyc": "^15.0.0",
     "rimraf": "^2.5.4",
-    "tslint": "latest",
+    "tslint": "^5.0.0",
     "typescript": "latest"
   },
   "peerDependencies": {
     "grunt": ">=0.4.5",
-    "tslint": "^5.0.0 || ^5.0.0-dev || ^5.1.0-dev || ^5.2.0-dev || ^5.3.0-dev"
+    "tslint": "^5.0.0 || ^5.0.0-dev || ^5.1.0-dev || ^5.2.0-dev || ^5.3.0-dev",
+    "js-md5": ">=0.7.3"
   },
   "keywords": [
     "gruntplugin",
     "tslint",
     "typescript"
-  ],
-  "dependencies": {
-    "js-md5": "^0.7.3"
-  }
+  ]
 }
